@@ -73,9 +73,9 @@ func (d *Decimal) UnmarshalText(text []byte) (err error) {
 //    0 if x == y
 //   +1 if x >  y
 //
-func (x *Decimal) Cmp(y *Decimal) int {
-	xUnscaled, yUnscaled := x.Unscaled, y.Unscaled
-	xScale, yScale := x.Scale, y.Scale
+func (d *Decimal) Cmp(y *Decimal) int {
+	xUnscaled, yUnscaled := d.Unscaled, y.Unscaled
+	xScale, yScale := d.Scale, y.Scale
 
 	for ; xScale > yScale; xScale-- {
 		yUnscaled = yUnscaled * 10
@@ -100,7 +100,7 @@ func (d *Decimal) String() string {
 	b, err := d.MarshalText()
 
 	if err != nil {
-		panic(err) //should never happen (see: MarshalText)
+		panic(err) // should never happen (see: MarshalText)
 	}
 
 	return string(b)

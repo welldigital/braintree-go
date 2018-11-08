@@ -13,5 +13,5 @@ const (
 type TransparentRedirectData struct {
 	Kind        TransparentRedirectKind `url:"kind"`
 	RedirectURL string                  `url:"redirect_url"`
-	Transaction TransactionURLRequest   `url:"transaction,omitempty"`
+	Transaction TransactionRequest      `url:"transaction,omitempty"`
 }

@@ -1,3 +1,5 @@
+// +build unit
+
 package braintree
 
 import (
@@ -56,8 +58,17 @@ func TestTransactionData(t *testing.T) {
 	tr := New(Sandbox, "merch-id", "pub-key", "priv-key").TransparentRedirect()
 	data, err := tr.TransactionData(&TransparentRedirectData{
 		RedirectURL: "http://call.me",
-		Transaction: TransactionURLRequest{
+		Transaction: TransactionRequest{
+			Type:   "sale",
 			Amount: NewDecimal(2000, 2),
+			Options: &TransactionOptions{
+				SubmitForSettlement: true,
+				StoreInVault:        true,
+			},
+			OrderId: "1541415277280",
+			Customer: &CustomerRequest{
+				ID: "1234",
+			},
 		},
 	})
 	if err != nil {
@@ -72,9 +83,18 @@ func TestTransactionData(t *testing.T) {
 	if !strings.Contains(data, "transaction%5Bamount%5D=20.00") {
 		t.Errorf("expected data to contain '%s' but didn't: %s", "transaction%5Bamount%5D=20", data)
 	}
+	if !strings.Contains(data, "transaction%5Boptions%5D%5Bsubmit_for_settlement%5D=1") {
+		t.Errorf("expected data to contain '%s' but didn't: %s", "transaction%5Boptions%5D%5Bsubmit_for_settlement%5D=1", data)
+	}
+	if !strings.Contains(data, "transaction%5Boptions%5D%5Bstore_in_vault%5D=1") {
+		t.Errorf("expected data to contain '%s' but didn't: %s", "transaction%5Boptions%5D%5Bstore_in_vault%5D=1", data)
+	}
+	if !strings.Contains(data, "|") {
+		t.Fatalf("expected data to contain '%s' but didn't: %s", "|", data)
+	}
 	split := strings.Split(data, "|")
 	if len(split) != 2 {
-		t.Fatalf("expected string to contain | but didn't: %s", data)
+		t.Fatalf("expected string to contain 2 pieces, got: %d", len(split))
 	}
 	hmacer := newHmacer("pub-key", "priv-key")
 	valid, err := hmacer.verifyTransparentSignature(split[0], split[1])
