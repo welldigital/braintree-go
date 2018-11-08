@@ -2,7 +2,6 @@ package braintree
 
 import (
 	"encoding/xml"
-	"net/url"
 	"time"
 
 	"github.com/braintree-go/braintree-go/customfields"
@@ -116,7 +115,7 @@ type TransactionRequest struct {
 	BillingAddress      *Address                    `xml:"billing,omitempty" url:"billing,omitempty"`
 	ShippingAddress     *Address                    `xml:"shipping,omitempty" url:"shipping,omitempty"`
 	TaxAmount           *Decimal                    `xml:"tax-amount,omitempty" url:"tax_amount,omitempty"`
-	TaxExempt           BoolQuery                   `xml:"tax-exempt,omitempty" url:"tax_exempt,omitempty"`
+	TaxExempt           bool                        `xml:"tax-exempt,omitempty" url:"tax_exempt,omitempty,int"`
 	DeviceData          string                      `xml:"device-data,omitempty" url:"device_data,omitempty"`
 	Options             *TransactionOptions         `xml:"options,omitempty" url:"options,omitempty"`
 	ServiceFeeAmount    *Decimal                    `xml:"service-fee-amount,attr,omitempty" url:"service_fee_amount,omitempty"`
@@ -188,28 +187,15 @@ type Transactions struct {
 	Transaction []*Transaction `xml:"transaction"`
 }
 
-type BoolQuery bool
-
-// EncodeValues transforms boolean value to string representation for query string
-func (b BoolQuery) EncodeValues(key string, v *url.Values) error {
-	if b {
-		v.Set(key, "1")
-	} else {
-		v.Set(key, "0")
-	}
-
-	return nil
-}
-
 type TransactionOptions struct {
-	SubmitForSettlement              BoolQuery                              `xml:"submit-for-settlement,omitempty" url:"submit_for_settlement,omitempty"`
-	StoreInVault                     BoolQuery                              `xml:"store-in-vault,omitempty" url:"store_in_vault,omitempty"`
-	StoreInVaultOnSuccess            BoolQuery                              `xml:"store-in-vault-on-success,omitempty" url:"store_in_vault_on_success,omitempty"`
-	AddBillingAddressToPaymentMethod BoolQuery                              `xml:"add-billing-address-to-payment-method,omitempty" url:"add_billing_address_to_payment_method,omitempty"`
-	StoreShippingAddressInVault      BoolQuery                              `xml:"store-shipping-address-in-vault,omitempty" url:"store_shipping_address_in_vault,omitempty"`
-	HoldInEscrow                     BoolQuery                              `xml:"hold-in-escrow,omitempty" url:"hold_in_escrow,omitempty"`
+	SubmitForSettlement              bool                                   `xml:"submit-for-settlement,omitempty" url:"submit_for_settlement,omitempty,int"`
+	StoreInVault                     bool                                   `xml:"store-in-vault,omitempty" url:"store_in_vault,omitempty,int"`
+	StoreInVaultOnSuccess            bool                                   `xml:"store-in-vault-on-success,omitempty" url:"store_in_vault_on_success,omitempty,int"`
+	AddBillingAddressToPaymentMethod bool                                   `xml:"add-billing-address-to-payment-method,omitempty" url:"add_billing_address_to_payment_method,omitempty,int"`
+	StoreShippingAddressInVault      bool                                   `xml:"store-shipping-address-in-vault,omitempty" url:"store_shipping_address_in_vault,omitempty,int"`
+	HoldInEscrow                     bool                                   `xml:"hold-in-escrow,omitempty" url:"hold_in_escrow,omitempty,int"`
 	TransactionOptionsPaypalRequest  *TransactionOptionsPaypalRequest       `xml:"paypal,omitempty" url:"paypal,omitempty"`
-	SkipAdvancedFraudChecking        BoolQuery                              `xml:"skip-advanced-fraud-checking,omitempty" url:"skip_advanced_fraud_checking,omitempty"`
+	SkipAdvancedFraudChecking        bool                                   `xml:"skip-advanced-fraud-checking,omitempty" url:"skip_advanced_fraud_checking,omitempty,int"`
 	ThreeDSecure                     *TransactionOptionsThreeDSecureRequest `xml:"three-d-secure,omitempty" url:"three_d_secure,omitempty"`
 }
 
@@ -269,7 +255,7 @@ func (r TransactionOptionsPaypalRequest) MarshalXML(e *xml.Encoder, start xml.St
 }
 
 type TransactionOptionsThreeDSecureRequest struct {
-	Required BoolQuery `xml:"required"`
+	Required bool `xml:"required"`
 }
 
 type TransactionSearchResult struct {
