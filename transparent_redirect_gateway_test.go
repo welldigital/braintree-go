@@ -57,7 +57,7 @@ func TestTransactionData(t *testing.T) {
 	data, err := tr.TransactionData(&TransparentRedirectData{
 		RedirectURL: "http://call.me",
 		Transaction: TransactionURLRequest{
-			Amount: "20",
+			Amount: NewDecimal(2000, 2),
 		},
 	})
 	if err != nil {
@@ -69,7 +69,7 @@ func TestTransactionData(t *testing.T) {
 	if !strings.Contains(data, "redirect_url=http%3A%2F%2Fcall.me") {
 		t.Errorf("expected data to contain '%s' but didn't: %s", "redirect_url=http%3A%2F%2Fcall.me", data)
 	}
-	if !strings.Contains(data, "transaction%5Bamount%5D=20") {
+	if !strings.Contains(data, "transaction%5Bamount%5D=20.00") {
 		t.Errorf("expected data to contain '%s' but didn't: %s", "transaction%5Bamount%5D=20", data)
 	}
 	split := strings.Split(data, "|")
