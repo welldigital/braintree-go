@@ -2,6 +2,7 @@ package braintree
 
 import (
 	"encoding/xml"
+	"net/url"
 	"time"
 
 	"github.com/braintree-go/braintree-go/customfields"
@@ -100,59 +101,32 @@ type Transaction struct {
 	Disputes                     []*Dispute                `xml:"disputes>dispute"`
 }
 
-type TransactionURLRequest struct {
-	CustomerID          string                      `url:"customer_id,omitempty"`
-	Type                string                      `url:"type,omitempty"`
-	Amount              *Decimal                    `url:"amount,omitempty"`
-	OrderId             string                      `url:"order_id,omitempty"`
-	PaymentMethodToken  string                      `url:"payment_method_token,omitempty"`
-	PaymentMethodNonce  string                      `url:"payment_method_nonce,omitempty"`
-	MerchantAccountId   string                      `url:"merchant_account_id,omitempty"`
-	PlanId              string                      `url:"plan_id,omitempty"`
-	CreditCard          *CreditCard                 `url:"credit_card,omitempty"`
-	Customer            *CustomerRequest            `url:"customer,omitempty"`
-	BillingAddress      *Address                    `url:"billing,omitempty"`
-	ShippingAddress     *Address                    `url:"shipping,omitempty"`
-	TaxAmount           *Decimal                    `url:"tax_amount,omitempty"`
-	TaxExempt           bool                        `url:"tax_exempt,omitempty"`
-	DeviceData          string                      `url:"device_data,omitempty"`
-	Options             *TransactionURLOptions      `url:"options,omitempty"`
-	ServiceFeeAmount    *Decimal                    `url:"service_fee_amount,omitempty"`
-	RiskData            *RiskDataRequest            `url:"risk_data,omitempty"`
-	Descriptor          *Descriptor                 `url:"descriptor,omitempty"`
-	Channel             string                      `url:"channel,omitempty"`
-	CustomFields        customfields.CustomFields   `url:"custom_fields,omitempty"`
-	PurchaseOrderNumber string                      `url:"purchase_order_number,omitempty"`
-	TransactionSource   TransactionSource           `url:"transaction_source,omitempty"`
-	LineItems           TransactionLineItemRequests `url:"line_items,omitempty"`
-}
-
 type TransactionRequest struct {
-	XMLName             string                      `xml:"transaction"`
-	CustomerID          string                      `xml:"customer-id,omitempty"`
-	Type                string                      `xml:"type,omitempty"`
-	Amount              *Decimal                    `xml:"amount"`
-	OrderId             string                      `xml:"order-id,omitempty"`
-	PaymentMethodToken  string                      `xml:"payment-method-token,omitempty"`
-	PaymentMethodNonce  string                      `xml:"payment-method-nonce,omitempty"`
-	MerchantAccountId   string                      `xml:"merchant-account-id,omitempty"`
-	PlanId              string                      `xml:"plan-id,omitempty"`
-	CreditCard          *CreditCard                 `xml:"credit-card,omitempty"`
-	Customer            *CustomerRequest            `xml:"customer,omitempty"`
-	BillingAddress      *Address                    `xml:"billing,omitempty"`
-	ShippingAddress     *Address                    `xml:"shipping,omitempty"`
-	TaxAmount           *Decimal                    `xml:"tax-amount,omitempty"`
-	TaxExempt           bool                        `xml:"tax-exempt,omitempty"`
-	DeviceData          string                      `xml:"device-data,omitempty"`
-	Options             *TransactionOptions         `xml:"options,omitempty"`
-	ServiceFeeAmount    *Decimal                    `xml:"service-fee-amount,attr,omitempty"`
-	RiskData            *RiskDataRequest            `xml:"risk-data,omitempty"`
-	Descriptor          *Descriptor                 `xml:"descriptor,omitempty"`
-	Channel             string                      `xml:"channel,omitempty"`
-	CustomFields        customfields.CustomFields   `xml:"custom-fields,omitempty"`
-	PurchaseOrderNumber string                      `xml:"purchase-order-number,omitempty"`
-	TransactionSource   TransactionSource           `xml:"transaction-source,omitempty"`
-	LineItems           TransactionLineItemRequests `xml:"line-items,omitempty"`
+	XMLName             string                      `xml:"transaction" url:"-"`
+	CustomerID          string                      `xml:"customer-id,omitempty" url:"customer_id,omitempty"`
+	Type                string                      `xml:"type,omitempty" url:"type,omitempty"`
+	Amount              *Decimal                    `xml:"amount" url:"amount,omitempty"`
+	OrderId             string                      `xml:"order-id,omitempty" url:"order_id,omitempty"`
+	PaymentMethodToken  string                      `xml:"payment-method-token,omitempty" url:"payment_method_token,omitempty"`
+	PaymentMethodNonce  string                      `xml:"payment-method-nonce,omitempty" url:"payment_method_nonce,omitempty"`
+	MerchantAccountId   string                      `xml:"merchant-account-id,omitempty" url:"merchant_account_id,omitempty"`
+	PlanId              string                      `xml:"plan-id,omitempty" url:"plan_id,omitempty"`
+	CreditCard          *CreditCard                 `xml:"credit-card,omitempty" url:"credit_card,omitempty"`
+	Customer            *CustomerRequest            `xml:"customer,omitempty" url:"customer,omitempty"`
+	BillingAddress      *Address                    `xml:"billing,omitempty" url:"billing,omitempty"`
+	ShippingAddress     *Address                    `xml:"shipping,omitempty" url:"shipping,omitempty"`
+	TaxAmount           *Decimal                    `xml:"tax-amount,omitempty" url:"tax_amount,omitempty"`
+	TaxExempt           BoolQuery                   `xml:"tax-exempt,omitempty" url:"tax_exempt,omitempty"`
+	DeviceData          string                      `xml:"device-data,omitempty" url:"device_data,omitempty"`
+	Options             *TransactionOptions         `xml:"options,omitempty" url:"options,omitempty"`
+	ServiceFeeAmount    *Decimal                    `xml:"service-fee-amount,attr,omitempty" url:"service_fee_amount,omitempty"`
+	RiskData            *RiskDataRequest            `xml:"risk-data,omitempty" url:"risk_data,omitempty"`
+	Descriptor          *Descriptor                 `xml:"descriptor,omitempty" url:"descriptor,omitempty"`
+	Channel             string                      `xml:"channel,omitempty" url:"channel,omitempty"`
+	CustomFields        customfields.CustomFields   `xml:"custom-fields,omitempty" url:"custom_fields,omitempty"`
+	PurchaseOrderNumber string                      `xml:"purchase-order-number,omitempty" url:"purchase_order_number,omitempty"`
+	TransactionSource   TransactionSource           `xml:"transaction-source,omitempty" url:"transaction_source,omitempty"`
+	LineItems           TransactionLineItemRequests `xml:"line-items,omitempty" url:"line_items,omitempty"`
 }
 
 func (t *Transaction) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -214,25 +188,29 @@ type Transactions struct {
 	Transaction []*Transaction `xml:"transaction"`
 }
 
-type TransactionURLOptions struct {
-	SubmitForSettlement              int `url:"submit_for_settlement,omitempty"`
-	StoreInVault                     int `url:"store_in_vault,omitempty"`
-	StoreInVaultOnSuccess            int `url:"store_in_vault_on_success,omitempty"`
-	AddBillingAddressToPaymentMethod int `url:"add_billing_address_to_payment_method,omitempty"`
-	StoreShippingAddressInVault      int `url:"store_shipping_address_in_vault,omitempty"`
-	HoldInEscrow                     int `url:"hold_in_escrow,omitempty"`
+type BoolQuery bool
+
+// EncodeValues transforms boolean value to string representation for query string
+func (b BoolQuery) EncodeValues(key string, v *url.Values) error {
+	if b {
+		v.Set(key, "1")
+	} else {
+		v.Set(key, "0")
+	}
+
+	return nil
 }
 
 type TransactionOptions struct {
-	SubmitForSettlement              bool                                   `xml:"submit-for-settlement,omitempty"`
-	StoreInVault                     bool                                   `xml:"store-in-vault,omitempty"`
-	StoreInVaultOnSuccess            bool                                   `xml:"store-in-vault-on-success,omitempty"`
-	AddBillingAddressToPaymentMethod bool                                   `xml:"add-billing-address-to-payment-method,omitempty"`
-	StoreShippingAddressInVault      bool                                   `xml:"store-shipping-address-in-vault,omitempty"`
-	HoldInEscrow                     bool                                   `xml:"hold-in-escrow,omitempty"`
-	TransactionOptionsPaypalRequest  *TransactionOptionsPaypalRequest       `xml:"paypal,omitempty"`
-	SkipAdvancedFraudChecking        bool                                   `xml:"skip_advanced_fraud_checking,omitempty"`
-	ThreeDSecure                     *TransactionOptionsThreeDSecureRequest `xml:"three-d-secure,omitempty"`
+	SubmitForSettlement              BoolQuery                              `xml:"submit-for-settlement,omitempty" url:"submit_for_settlement,omitempty"`
+	StoreInVault                     BoolQuery                              `xml:"store-in-vault,omitempty" url:"store_in_vault,omitempty"`
+	StoreInVaultOnSuccess            BoolQuery                              `xml:"store-in-vault-on-success,omitempty" url:"store_in_vault_on_success,omitempty"`
+	AddBillingAddressToPaymentMethod BoolQuery                              `xml:"add-billing-address-to-payment-method,omitempty" url:"add_billing_address_to_payment_method,omitempty"`
+	StoreShippingAddressInVault      BoolQuery                              `xml:"store-shipping-address-in-vault,omitempty" url:"store_shipping_address_in_vault,omitempty"`
+	HoldInEscrow                     BoolQuery                              `xml:"hold-in-escrow,omitempty" url:"hold_in_escrow,omitempty"`
+	TransactionOptionsPaypalRequest  *TransactionOptionsPaypalRequest       `xml:"paypal,omitempty" url:"paypal,omitempty"`
+	SkipAdvancedFraudChecking        BoolQuery                              `xml:"skip-advanced-fraud-checking,omitempty" url:"skip_advanced_fraud_checking,omitempty"`
+	ThreeDSecure                     *TransactionOptionsThreeDSecureRequest `xml:"three-d-secure,omitempty" url:"three_d_secure,omitempty"`
 }
 
 type TransactionOptionsPaypalRequest struct {
@@ -291,7 +269,7 @@ func (r TransactionOptionsPaypalRequest) MarshalXML(e *xml.Encoder, start xml.St
 }
 
 type TransactionOptionsThreeDSecureRequest struct {
-	Required bool `xml:"required"`
+	Required BoolQuery `xml:"required"`
 }
 
 type TransactionSearchResult struct {
