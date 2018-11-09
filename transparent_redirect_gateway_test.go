@@ -105,3 +105,11 @@ func TestTransactionData(t *testing.T) {
 		t.Errorf("expected signature to be valid")
 	}
 }
+
+func TestFormURL(t *testing.T) {
+	tr := New(Sandbox, "merch-id", "pub-key", "priv-key").TransparentRedirect()
+	expURL := tr.Braintree.MerchantURL() + "/transparent_redirect_requests"
+	if tr.FormURL() != expURL {
+		t.Errorf("expected form url to be '%s' but was '%s", expURL, tr.FormURL())
+	}
+}
