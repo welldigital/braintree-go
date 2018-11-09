@@ -66,7 +66,7 @@ func (tr *TransparentRedirectGateway) ValidateQueryString(query string) (bool, e
 
 // FormURL returns the URL the html form has to POST to.
 func (tr *TransparentRedirectGateway) FormURL() string {
-	return tr.Environment().baseURL + "/transparent_redirect_requests"
+	return tr.MerchantURL() + "/transparent_redirect_requests"
 }
 
 // Confirm confirms the transaction.
