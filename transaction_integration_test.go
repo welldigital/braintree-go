@@ -428,6 +428,9 @@ func TestTransactionCreateWhenGatewayRejected(t *testing.T) {
 	if err.(*BraintreeError).Transaction.ProcessorResponseCode != 2010 {
 		t.Fatalf("expected err.Transaction.ProcessorResponseCode to be 2010, but got %d", err.(*BraintreeError).Transaction.ProcessorResponseCode)
 	}
+	if err.(*BraintreeError).Transaction.ProcessorResponseType != ProcessorResponseTypeHardDeclined {
+		t.Fatalf("expected err.Transaction.ProcessorResponseType to be %s, but got %s", ProcessorResponseTypeHardDeclined, err.(*BraintreeError).Transaction.ProcessorResponseType)
+	}
 
 	if err.(*BraintreeError).Transaction.AdditionalProcessorResponse != "2010 : Card Issuer Declined CVV" {
 		t.Fatalf("expected err.Transaction.ProcessorResponseCode to be `2010 : Card Issuer Declined CVV`, but got %s", err.(*BraintreeError).Transaction.AdditionalProcessorResponse)
@@ -965,6 +968,10 @@ func TestAllTransactionFields(t *testing.T) {
 	if tx2.AdditionalProcessorResponse != "" {
 		t.Fatalf("expected tx2.AdditionalProcessorResponse to be empty, but got %s", tx2.AdditionalProcessorResponse)
 	}
+	if tx2.ProcessorResponseType != ProcessorResponseTypeApproved {
+		t.Fatalf("expected tx2.ProcessorResponseType to be %s, but got %s", ProcessorResponseTypeApproved, tx2.ProcessorResponseType)
+	}
+
 	if tx2.RiskData == nil {
 		t.Fatal("expected tx2.RiskData not to be empty")
 	}
@@ -989,6 +996,11 @@ func TestAllTransactionFields(t *testing.T) {
 	}
 	if tx2.SubscriptionDetails != nil {
 		t.Fatalf("expected Subscription to be not nil, but got %#v", tx2.SubscriptionDetails)
+	}
+	if tx2.AuthorizationExpiresAt == nil {
+		t.Fatalf("expected AuthorizationExpiresAt to be not nil, but got %#v", tx2.AuthorizationExpiresAt)
+	} else if tx2.AuthorizationExpiresAt.Before(time.Now()) || tx2.AuthorizationExpiresAt.After(time.Now().AddDate(0, 0, 60)) {
+		t.Fatalf("expected AuthorizationExpiresAt to be between the current time and 60 days from now, but got %s", tx2.AuthorizationExpiresAt.Format(time.RFC3339))
 	}
 }
 
@@ -1147,7 +1159,91 @@ func TestTransactionCreateSettleAndFullRefund(t *testing.T) {
 	refundTxn, err = testGateway.Transaction().Refund(ctx, txn.Id)
 	t.Log(refundTxn)
 
-	if err.Error() != "Transaction has already been completely refunded." {
+	if err.Error() != "Transaction has already been fully refunded." {
+		t.Fatal(err)
+	}
+}
+
+func TestTransactionCreateSettleAndFullRefundWithRequest(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	amount := NewDecimal(20000, 2)
+	txn, err := testGateway.Transaction().Create(ctx, &TransactionRequest{
+		Type:   "sale",
+		Amount: amount,
+		CreditCard: &CreditCard{
+			Number:         testCardVisa,
+			ExpirationDate: "05/14",
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txn, err = testGateway.Transaction().SubmitForSettlement(ctx, txn.Id, txn.Amount)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txn, err = testGateway.Testing().Settle(ctx, txn.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if txn.Status != TransactionStatusSettled {
+		t.Fatal(txn.Status)
+	}
+
+	// Refund
+	refundTxn, err := testGateway.Transaction().RefundWithRequest(ctx, txn.Id, &TransactionRefundRequest{
+		OrderID: "fully-refunded-tx",
+	})
+
+	t.Log(refundTxn)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if x := refundTxn.Status; x != TransactionStatusSubmittedForSettlement {
+		t.Fatal(x)
+	}
+
+	refundTxn, err = testGateway.Testing().Settle(ctx, refundTxn.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if refundTxn.Status != TransactionStatusSettled {
+		t.Fatal(txn.Status)
+	}
+
+	if *refundTxn.RefundedTransactionId != txn.Id {
+		t.Fatal(*refundTxn.RefundedTransactionId)
+	}
+
+	if refundTxn.OrderId != "fully-refunded-tx" {
+		t.Fatal(refundTxn.OrderId)
+	}
+
+	// Check that the refund shows up in the original transaction
+	txn, err = testGateway.Transaction().Find(ctx, txn.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if txn.RefundIds != nil && (*txn.RefundIds)[0] != refundTxn.Id {
+		t.Fatal(*txn.RefundIds)
+	}
+
+	// Second refund should fail
+	refundTxn, err = testGateway.Transaction().RefundWithRequest(ctx, txn.Id, &TransactionRefundRequest{
+		OrderID: "fully-refunded-tx",
+	})
+	t.Log(refundTxn)
+
+	if err.Error() != "Transaction has already been fully refunded." {
 		t.Fatal(err)
 	}
 }

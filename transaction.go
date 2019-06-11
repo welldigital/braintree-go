@@ -77,6 +77,7 @@ type Transaction struct {
 	RefundedTransactionId        *string                   `xml:"refunded-transaction-id"`
 	ProcessorResponseCode        ProcessorResponseCode     `xml:"processor-response-code"`
 	ProcessorResponseText        string                    `xml:"processor-response-text"`
+	ProcessorResponseType        ProcessorResponseType     `xml:"processor-response-type"`
 	ProcessorAuthorizationCode   string                    `xml:"processor-authorization-code"`
 	SettlementBatchId            string                    `xml:"settlement-batch-id"`
 	EscrowStatus                 EscrowStatus              `xml:"escrow-status"`
@@ -98,6 +99,7 @@ type Transaction struct {
 	GatewayRejectionReason       GatewayRejectionReason    `xml:"gateway-rejection-reason"`
 	PurchaseOrderNumber          string                    `xml:"purchase-order-number"`
 	Disputes                     []*Dispute                `xml:"disputes>dispute"`
+	AuthorizationExpiresAt       *time.Time                `xml:"authorization-expires-at"`
 }
 
 type TransactionRequest struct {
@@ -126,6 +128,12 @@ type TransactionRequest struct {
 	PurchaseOrderNumber string                      `xml:"purchase-order-number,omitempty" url:"purchase_order_number,omitempty"`
 	TransactionSource   TransactionSource           `xml:"transaction-source,omitempty" url:"transaction_source,omitempty"`
 	LineItems           TransactionLineItemRequests `xml:"line-items,omitempty" url:"line_items,omitempty"`
+}
+
+type TransactionRefundRequest struct {
+	XMLName string   `xml:"transaction"`
+	Amount  *Decimal `xml:"amount"`
+	OrderID string   `xml:"order-id,omitempty"`
 }
 
 func (t *Transaction) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
